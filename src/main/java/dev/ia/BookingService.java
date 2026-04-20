@@ -4,6 +4,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 
 import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -18,7 +19,7 @@ public class BookingService {
                 "Tesouros do Egito",
                 LocalDate.now().plusMonths(2),
                 LocalDate.now().plusMonths(2).plusDays(12),
-                BookingStatus.CONFIRMED
+                BookingStatus.CONFIRMED, Category.TREASURES
         ));
         bookings.put(67890L, new Booking(
                 67890L,
@@ -26,8 +27,22 @@ public class BookingService {
                 "Aventura Amazonia",
                 LocalDate.now().plusMonths(3),
                 LocalDate.now().plusMonths(3).plusDays(7),
-                BookingStatus.CONFIRMED
+                BookingStatus.CONFIRMED, Category.ADVENTURE
         ));
+        bookings.put(98765L, new Booking(
+                98765L,
+                "Peter Jones",
+                "Trilha Inca",
+                LocalDate.now().plusMonths(4),
+                LocalDate.now().plusMonths(4).plusDays(5),
+                BookingStatus.CONFIRMED, Category.ADVENTURE
+        ));
+    }
+
+    public List<Booking> findPackagesByCategory(Category category) {
+        return bookings.values().stream()
+                .filter(booking -> category.equals(booking.category()))
+                .toList();
     }
 
     public Optional<Booking> getBookingDetails(long bookingId) {
@@ -35,6 +50,7 @@ public class BookingService {
     }
 
     public Optional<Booking> cancelBooking(long bookingId, String customerLastName) {
+        String currentUser = SecurityContext.getCurrentUser();
         if (bookings.containsKey(bookingId)) {
             Booking booking = bookings.get(bookingId);
             if (booking.customerName().endsWith(customerLastName)) {
@@ -44,9 +60,10 @@ public class BookingService {
                         booking.destination(),
                         booking.startDate(),
                         booking.endDate(),
-                        BookingStatus.CANCELLED
+                        BookingStatus.CANCELLED,
+                        booking.category()
                 );
-                bookings.put(bookingId, cancelledBooking);
+                this.bookings.replace(bookingId, cancelledBooking);
                 return Optional.of(cancelledBooking);
             }
         }
