@@ -17,11 +17,11 @@ public class TravelAgentResource {
         if (userName != null && !userName.isEmpty()) {
             try {
                 SecurityContext.setCurrentUser(userName);
-                return expert.chat(userName, question); //Usar userName como memoryId
+                return expert.chat(userName, question); // Usar userName como memoryId e username
             } finally {
                 SecurityContext.clear();
             }
-        }else{
+        } else {
             return "Usuario precisa estar autenticado!";
         }
     }
